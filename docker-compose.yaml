@@ -1,7 +1,7 @@
 services:
   grafana:
     extends:
-      file: compose_zabbix_components.yaml
+      file: compose_additional_components.yaml
       service: grafana
     image: grafana/grafana
     volumes:
