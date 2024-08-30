@@ -53,6 +53,14 @@ services:
     labels:
       com.zabbix.os: "${OL_OS_TAG}"
 
+  zabbix-java-gateway:
+    extends:
+      file: compose_zabbix_components.yaml
+      service: java-gateway
+    image: "${ZABBIX_JAVA_GATEWAY_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+    labels:
+      com.zabbix.os: "${OL_OS_TAG}"
+
   zabbix-snmptraps:
     extends:
       file: compose_zabbix_components.yaml
