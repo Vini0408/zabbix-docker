@@ -11,40 +11,6 @@ services:
   labels:
    com.zabbix.os: "${OL_OS_TAG}"
 
- zabbix-proxy-sqlite3:
-  extends:
-   file: compose_zabbix_components.yaml
-   service: proxy-sqlite3
-  image: "${ZABBIX_PROXY_SQLITE3_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
-  volumes:
-   - /etc/timezone:/etc/timezone:ro
-  labels:
-   com.zabbix.os: "${OL_OS_TAG}"
-
- zabbix-proxy-mysql:
-  extends:
-   file: compose_zabbix_components.yaml
-   service: proxy-mysql
-  image: "${ZABBIX_PROXY_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
-  volumes:
-   - /etc/timezone:/etc/timezone:ro
-  depends_on:
-   - mysql-server
-  labels:
-   com.zabbix.os: "${OL_OS_TAG}"
-
- zabbix-web-apache-mysql:
-  extends:
-   file: compose_zabbix_components.yaml
-   service: web-apache-mysql
-  image: "${ZABBIX_WEB_APACHE_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
-  volumes:
-   - /etc/timezone:/etc/timezone:ro
-  depends_on:
-   - mysql-server
-  labels:
-   com.zabbix.os: "${OL_OS_TAG}"
-
  zabbix-web-nginx-mysql:
   extends:
    file: compose_zabbix_components.yaml
@@ -64,14 +30,6 @@ services:
   image: "${ZABBIX_AGENT_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
   volumes:
    - /etc/timezone:/etc/timezone:ro
-  labels:
-   com.zabbix.os: "${OL_OS_TAG}"
-
- zabbix-java-gateway:
-  extends:
-   file: compose_zabbix_components.yaml
-   service: java-gateway
-  image: "${ZABBIX_JAVA_GATEWAY_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
   labels:
    com.zabbix.os: "${OL_OS_TAG}"
 
@@ -100,11 +58,6 @@ services:
   extends:
    file: compose_databases.yaml
    service: db-data-mysql
-
- elasticsearch:
-  extends:
-   file: compose_databases.yaml
-   service: elasticsearch
 
  selenium:
   extends:
