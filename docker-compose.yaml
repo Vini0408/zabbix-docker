@@ -2,7 +2,7 @@ services:
   grafana:
     extends:
       file: compose_zabbix_components.yaml
-      service: server-mysql
+      service: grafana
     image: grafana/grafana
     volumes:
       - /etc/timezone:/etc/timezone:ro
