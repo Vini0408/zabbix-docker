@@ -411,33 +411,33 @@ services:
       com.zabbix.company: "Zabbix LLC"
       com.zabbix.component: "web-service"
 
-java-gateway:
-  profiles:
-    - full
-    - all
-  ports:
-    - "${ZABBIX_JAVA_GATEWAY_PORT}:10052"
-  restart: "${RESTART_POLICY}"
-  attach: false
-  deploy:
-    resources:
-      limits:
-        cpus: "0.5"
-        memory: 512M
-      reservations:
-        cpus: "0.25"
-        memory: 256M
-  env_file:
-    - ${ENV_VARS_DIRECTORY}/.env_java
-    - path: ${ENV_VARS_DIRECTORY}/.env_java_override
-      required: false
-  networks:
-    backend:
-      aliases:
-        - zabbix-java-gateway
-    frontend:
-  stop_grace_period: 5s
-  labels:
-    com.zabbix.description: "Zabbix Java Gateway"
-    com.zabbix.company: "Zabbix LLC"
-    com.zabbix.component: "java-gateway"
+  java-gateway:
+    profiles:
+      - full
+      - all
+    ports:
+      - "${ZABBIX_JAVA_GATEWAY_PORT}:10052"
+    restart: "${RESTART_POLICY}"
+    attach: false
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    env_file:
+      - ${ENV_VARS_DIRECTORY}/.env_java
+      - path: ${ENV_VARS_DIRECTORY}/.env_java_override
+        required: false
+    networks:
+      backend:
+        aliases:
+          - zabbix-java-gateway
+      frontend:
+    stop_grace_period: 5s
+    labels:
+      com.zabbix.description: "Zabbix Java Gateway"
+      com.zabbix.company: "Zabbix LLC"
+      com.zabbix.component: "java-gateway"
