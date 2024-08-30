@@ -43,6 +43,16 @@ services:
     labels:
       com.zabbix.os: "${OL_OS_TAG}"
 
+  zabbix-proxy-sqlite3:
+    extends:
+      file: compose_zabbix_components.yaml
+      service: proxy-sqlite3
+    image: "${ZABBIX_PROXY_SQLITE3_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.zabbix.os: "${OL_OS_TAG}"
+
   zabbix-snmptraps:
     extends:
       file: compose_zabbix_components.yaml
