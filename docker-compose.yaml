@@ -1,79 +1,88 @@
 services:
- zabbix-server:
-  extends:
-   file: compose_zabbix_components.yaml
-   service: server-mysql
-  image: "${ZABBIX_SERVER_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
-  volumes:
-   - /etc/timezone:/etc/timezone:ro
-  depends_on:
-   - mysql-server
-  labels:
-   com.zabbix.os: "${OL_OS_TAG}"
+  grafana:
+    extends:
+      file: compose_zabbix_components.yaml
+      service: server-mysql
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+    depends_on:
+      - zabbix-server
 
- zabbix-web-nginx-mysql:
-  extends:
-   file: compose_zabbix_components.yaml
-   service: web-nginx-mysql
-  image: "${ZABBIX_WEB_NGINX_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
-  volumes:
-   - /etc/timezone:/etc/timezone:ro
-  depends_on:
-   - mysql-server
-  labels:
-   com.zabbix.os: "${OL_OS_TAG}"
+  zabbix-server:
+    extends:
+      file: compose_zabbix_components.yaml
+      service: server-mysql
+    image: "${ZABBIX_SERVER_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+    depends_on:
+      - mysql-server
+    labels:
+      com.zabbix.os: "${OL_OS_TAG}"
 
- zabbix-agent:
-  extends:
-   file: compose_zabbix_components.yaml
-   service: agent
-  image: "${ZABBIX_AGENT_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
-  volumes:
-   - /etc/timezone:/etc/timezone:ro
-  labels:
-   com.zabbix.os: "${OL_OS_TAG}"
+  zabbix-web-nginx-mysql:
+    extends:
+      file: compose_zabbix_components.yaml
+      service: web-nginx-mysql
+    image: "${ZABBIX_WEB_NGINX_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+    depends_on:
+      - mysql-server
+    labels:
+      com.zabbix.os: "${OL_OS_TAG}"
 
- zabbix-snmptraps:
-  extends:
-   file: compose_zabbix_components.yaml
-   service: snmptraps
-  image: "${ZABBIX_SNMPTRAPS_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
-  labels:
-   com.zabbix.os: "${OL_OS_TAG}"
+  zabbix-agent:
+    extends:
+      file: compose_zabbix_components.yaml
+      service: agent
+    image: "${ZABBIX_AGENT_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.zabbix.os: "${OL_OS_TAG}"
 
- zabbix-web-service:
-  extends:
-   file: compose_zabbix_components.yaml
-   service: web-service
-  image: "${ZABBIX_WEB_SERVICE_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
-  labels:
-   com.zabbix.os: "${OL_OS_TAG}"
+  zabbix-snmptraps:
+    extends:
+      file: compose_zabbix_components.yaml
+      service: snmptraps
+    image: "${ZABBIX_SNMPTRAPS_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+    labels:
+      com.zabbix.os: "${OL_OS_TAG}"
 
- mysql-server:
-  extends:
-   file: compose_databases.yaml
-   service: mysql-server
+  zabbix-web-service:
+    extends:
+      file: compose_zabbix_components.yaml
+      service: web-service
+    image: "${ZABBIX_WEB_SERVICE_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+    labels:
+      com.zabbix.os: "${OL_OS_TAG}"
 
- db-data-mysql:
-  extends:
-   file: compose_databases.yaml
-   service: db-data-mysql
+  mysql-server:
+    extends:
+      file: compose_databases.yaml
+      service: mysql-server
 
- selenium:
-  extends:
-   file: compose_additional_components.yaml
-   service: selenium
+  db-data-mysql:
+    extends:
+      file: compose_databases.yaml
+      service: db-data-mysql
 
- selenium-chrome:
-  platform: linux/amd64
-  extends:
-   file: compose_additional_components.yaml
-   service: selenium-chrome
+  selenium:
+    extends:
+      file: compose_additional_components.yaml
+      service: selenium
 
- selenium-firefox:
-  extends:
-   file: compose_additional_components.yaml
-   service: selenium-firefox
+  selenium-chrome:
+    platform: linux/amd64
+    extends:
+      file: compose_additional_components.yaml
+      service: selenium-chrome
+
+  selenium-firefox:
+    extends:
+      file: compose_additional_components.yaml
+      service: selenium-firefox
 
 networks:
   frontend:
@@ -83,7 +92,7 @@ networks:
     ipam:
       driver: "${FRONTEND_NETWORK_DRIVER}"
       config:
-      - subnet: "${FRONTEND_SUBNET}"
+        - subnet: "${FRONTEND_SUBNET}"
   backend:
     driver: bridge
     driver_opts:
@@ -92,7 +101,7 @@ networks:
     ipam:
       driver: "${BACKEND_NETWORK_DRIVER}"
       config:
-      - subnet: "${BACKEND_SUBNET}"
+        - subnet: "${BACKEND_SUBNET}"
   database:
     driver: bridge
     driver_opts:
@@ -107,7 +116,7 @@ networks:
     ipam:
       driver: "${ADD_TOOLS_NETWORK_DRIVER}"
       config:
-      - subnet: "${ADD_TOOLS_SUBNET}"
+        - subnet: "${ADD_TOOLS_SUBNET}"
 
 volumes:
   snmptraps:
