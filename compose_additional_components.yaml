@@ -1,6 +1,7 @@
 services:
   grafana:
     image: grafana/grafana
+    user: root
     container_name: grafana
     restart: "${RESTART_POLICY}"
     env_file:
