@@ -521,7 +521,7 @@ networks:
     ipam:
       driver: ${DATABASE_NETWORK_DRIVER}
   default:
-    external:
+    external: true
   frontend:
     driver: overlay
     attachable: true
