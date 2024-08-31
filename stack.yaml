@@ -137,10 +137,6 @@ services:
           - webdriver
           - selenium-hub
           - selenium
-    profiles:
-      - selenium
-      - selenium-chrome
-      - selenium-firefox
   selenium-chrome:
     
     depends_on:
@@ -155,9 +151,6 @@ services:
     networks:
       tools_frontend: null
     platform: linux/amd64
-    profiles:
-      - selenium
-      - selenium-chrome
     restart: ${RESTART_POLICY}
     scale: 2
     shm_size: 2gb
@@ -174,9 +167,6 @@ services:
     image: ${WEBDRIVER_FIREFOX_IMAGE}:${WEBDRIVER_FIREFOX_IMAGE_TAG}
     networks:
       tools_frontend: null
-    profiles:
-      - selenium
-      - selenium-firefox
     restart: ${RESTART_POLICY}
     scale: 2
     shm_size: 2gb
@@ -210,9 +200,6 @@ services:
     ports:
       - ${ZABBIX_AGENT_PORT}:10050
     privileged: true
-    profiles:
-      - full
-      - all
     restart: ${RESTART_POLICY}
     stop_grace_period: 5s
     tmpfs: /tmp
@@ -275,9 +262,6 @@ services:
       frontend: null
     ports:
       - ${ZABBIX_JAVA_GATEWAY_PORT}:10052
-    profiles:
-      - full
-      - all
     restart: ${RESTART_POLICY}
     stop_grace_period: 5s
   zabbix-proxy-sqlite3:
@@ -310,8 +294,6 @@ services:
       tools_frontend: null
     ports:
       - ${ZABBIX_PROXY_SQLITE3_PORT}:10051
-    profiles:
-      - all
     restart: ${RESTART_POLICY}
     stop_grace_period: 30s
     sysctls:
@@ -505,9 +487,6 @@ services:
           - zabbix-snmptraps
     ports:
       - ${ZABBIX_SNMPTRAPS_PORT}:1162/udp
-    profiles:
-      - full
-      - all
     read_only: true
     restart: ${RESTART_POLICY}
     stop_grace_period: 5s
@@ -618,9 +597,6 @@ services:
           - zabbix-web-service
     ports:
       - ${ZABBIX_WEB_SERVICE_PORT}:10053
-    profiles:
-      - full
-      - all
     restart: ${RESTART_POLICY}
     security_opt:
       - seccomp:${ENV_VARS_DIRECTORY}/chrome_dp.json
