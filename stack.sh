@@ -3,6 +3,7 @@
 start_service() {
   /usr/bin/docker compose -f docker-compose.yaml config > stack.yaml
   /usr/bin/sed -i 's/cpus: \([0-9]\+\(\.[0-9]\+\)\?\)/cpus: "\1"/g' stack.yaml
+  /usr/bin/sed -i 's/published: "\([0-9]\+\(\.[0-9]\+\)\?\)"/published: \1/g' stack.yaml
   /usr/bin/docker stack deploy --compose-file stack.yaml  zabbix 
 }
 
@@ -10,6 +11,7 @@ start_service() {
 status_stack() {
   /usr/bin/docker compose -f docker-compose.yaml config > stack.yaml
   /usr/bin/sed -i 's/cpus: \([0-9]\+\(\.[0-9]\+\)\?\)/cpus: "\1"/g' stack.yaml
+  /usr/bin/sed -i 's/published: "\([0-9]\+\(\.[0-9]\+\)\?\)"/published: \1/g' stack.yaml
   /usr/bin/docker stack services --compose-file stack.yaml  zabbix 
 }
 
