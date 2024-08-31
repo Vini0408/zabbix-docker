@@ -1,0 +1,660 @@
+name: zabbix-docker
+networks:
+  backend:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: ${BACKEND_ENABLE_IPV6}
+    internal: true
+    ipam:
+      config:
+        - subnet: ${BACKEND_SUBNET}
+      driver: ${BACKEND_NETWORK_DRIVER}
+    name: zabbix-docker_backend
+  database:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: ${DATABASE_NETWORK_ENABLE_IPV6}
+    internal: true
+    ipam:
+      driver: ${DATABASE_NETWORK_DRIVER}
+    name: zabbix-docker_database
+  default:
+    name: zabbix-docker_default
+  frontend:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: ${FRONTEND_ENABLE_IPV6}
+    ipam:
+      config:
+        - subnet: ${FRONTEND_SUBNET}
+      driver: ${FRONTEND_NETWORK_DRIVER}
+    name: zabbix-docker_frontend
+  tools_frontend:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: ${ADD_TOOLS_ENABLE_IPV6}
+    ipam:
+      config:
+        - subnet: ${ADD_TOOLS_SUBNET}
+      driver: ${ADD_TOOLS_NETWORK_DRIVER}
+    name: zabbix-docker_tools_frontend
+secrets:
+  MYSQL_PASSWORD:
+    file: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.MYSQL_PASSWORD
+    name: zabbix-docker_MYSQL_PASSWORD
+  MYSQL_ROOT_PASSWORD:
+    file: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.MYSQL_ROOT_PASSWORD
+    name: zabbix-docker_MYSQL_ROOT_PASSWORD
+  MYSQL_ROOT_USER:
+    file: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.MYSQL_ROOT_USER
+    name: zabbix-docker_MYSQL_ROOT_USER
+  MYSQL_USER:
+    file: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.MYSQL_USER
+    name: zabbix-docker_MYSQL_USER
+services:
+  db-data-mysql:
+    image: busybox
+    networks:
+      default: null
+    volumes:
+      - source: ${DATA_DIRECTORY}/var/lib/mysql
+        target: /var/lib/mysql
+        type: volume
+        volume: {}
+  grafana:
+    container_name: grafana
+    depends_on:
+      - zabbix-server
+    env_file:
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_grafana
+        required: true
+    image: grafana/grafana
+    networks:
+      default: null
+    ports:
+      - ${GRAFANA_PORT}:3000
+    restart: ${RESTART_POLICY}
+    user: root
+    volumes:
+      - source: ${DATA_DIRECTORY}/var/lib/grafana
+        target: /var/lib/grafana
+        type: volume
+        volume: {}
+      - source: ${ENV_VARS_DIRECTORY}/grafana/grafana.ini
+        target: /etc/grafana/grafana.ini
+        type: volume
+        volume: {}
+      - source: ${ENV_VARS_DIRECTORY}/grafana/provisioning
+        target: /etc/grafana/provisioning
+        type: volume
+        volume: {}
+      - bind:
+          create_host_path: true
+        read_only: true
+        source: /etc/timezone
+        target: /etc/timezone
+        type: bind
+  mysql-server:
+    attach: false
+    command:
+      - mysqld
+      - --skip-mysqlx
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_bin
+      - --log_bin_trust_function_creators=1
+    env_file:
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql
+        required: true
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql_override
+        required: false
+    environment:
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/MYSQL_ROOT_PASSWORD
+    image: ${MYSQL_IMAGE}:${MYSQL_IMAGE_TAG}
+    networks:
+      database:
+        aliases:
+          - mysql-server
+    restart: ${RESTART_POLICY}
+    secrets:
+      - source: MYSQL_USER
+        target: /run/secrets/MYSQL_USER
+      - source: MYSQL_PASSWORD
+        target: /run/secrets/MYSQL_PASSWORD
+      - source: MYSQL_ROOT_PASSWORD
+        target: /run/secrets/MYSQL_ROOT_PASSWORD
+    stop_grace_period: 1m
+    volumes:
+      - source: ${DATA_DIRECTORY}/var/lib/mysql
+        target: /var/lib/mysql
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${ENV_VARS_DIRECTORY}/mysql_init/init_proxy_db.sql
+        target: /docker-entrypoint-initdb.d/mysql_init_proxy.sql
+        type: volume
+        volume: {}
+  selenium:
+    image: ${WEBDRIVER_IMAGE}:${WEBDRIVER_IMAGE_TAG}
+    networks:
+      tools_frontend:
+        aliases:
+          - webdriver
+          - selenium-hub
+          - selenium
+    profiles:
+      - selenium
+      - selenium-chrome
+      - selenium-firefox
+  selenium-chrome:
+    attach: false
+    depends_on:
+      - selenium:
+    env_file:
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_selenium_chrome
+        required: false
+    environment:
+      - SE_EVENT_BUS_HOST=selenium
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    image: ${WEBDRIVER_CHROME_IMAGE}:${WEBDRIVER_CHROME_IMAGE_TAG}
+    networks:
+      tools_frontend: null
+    platform: linux/amd64
+    profiles:
+      - selenium
+      - selenium-chrome
+    restart: ${RESTART_POLICY}
+    scale: 2
+    shm_size: 2gb
+  selenium-firefox:
+    attach: false
+    depends_on:
+      - selenium:
+    env_file:
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_selenium_firefox
+        required: false
+    environment:
+      - SE_EVENT_BUS_HOST=selenium
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    image: ${WEBDRIVER_FIREFOX_IMAGE}:${WEBDRIVER_FIREFOX_IMAGE_TAG}
+    networks:
+      tools_frontend: null
+    profiles:
+      - selenium
+      - selenium-firefox
+    restart: ${RESTART_POLICY}
+    scale: 2
+    shm_size: 2gb
+  zabbix-agent:
+    attach: false
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 128M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+    env_file:
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_agent
+        required: true
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_agent_override
+        required: false
+    image: ${ZABBIX_AGENT_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
+    init: true
+    labels:
+      - com.zabbix.company=Zabbix LLC
+      - com.zabbix.component=zabbix-agentd
+      - com.zabbix.description=Zabbix agent
+      - com.zabbix.os=${OL_OS_TAG}
+    networks:
+      backend:
+        aliases:
+          - zabbix-agent
+          - zabbix-agent-passive
+    pid: host
+    ports:
+      - ${ZABBIX_AGENT_PORT}:10050
+    privileged: true
+    profiles:
+      - full
+      - all
+    restart: ${RESTART_POLICY}
+    stop_grace_period: 5s
+    tmpfs: /tmp
+    volumes:
+      - bind:
+          create_host_path: true
+        read_only: true
+        source: /etc/localtime
+        target: /etc/localtime
+        type: bind
+      - read_only: true
+        source: ${DATA_DIRECTORY}/etc/zabbix/zabbix_agentd.d
+        target: /etc/zabbix/zabbix_agentd.d
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${DATA_DIRECTORY}/var/lib/zabbix/modules
+        target: /var/lib/zabbix/modules
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${DATA_DIRECTORY}/var/lib/zabbix/enc
+        target: /var/lib/zabbix/enc
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${DATA_DIRECTORY}/var/lib/zabbix/ssh_keys
+        target: /var/lib/zabbix/ssh_keys
+        type: volume
+        volume: {}
+      - bind:
+          create_host_path: true
+        read_only: true
+        source: /etc/timezone
+        target: /etc/timezone
+        type: bind
+  zabbix-java-gateway:
+    attach: false
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    env_file:
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_java
+        required: true
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_java_override
+        required: false
+    image: ${ZABBIX_JAVA_GATEWAY_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
+    labels:
+      - com.zabbix.company=Zabbix LLC
+      - com.zabbix.component=java-gateway
+      - com.zabbix.description=Zabbix Java Gateway
+      - com.zabbix.os=${OL_OS_TAG}
+    networks:
+      backend:
+        aliases:
+          - zabbix-java-gateway
+      frontend: null
+    ports:
+      - ${ZABBIX_JAVA_GATEWAY_PORT}:10052
+    profiles:
+      - full
+      - all
+    restart: ${RESTART_POLICY}
+    stop_grace_period: 5s
+  zabbix-proxy-sqlite3:
+    attach: false
+    deploy:
+      resources:
+        limits:
+          cpus: "0.70"
+          memory: 512M
+        reservations:
+          cpus: "0.3"
+          memory: 256M
+    env_file:
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_prx
+        required: true
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_prx_sqlite3
+        required: true
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_prx_sqlite3_override
+        required: false
+    image: ${ZABBIX_PROXY_SQLITE3_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
+    init: true
+    labels:
+      - com.zabbix.company=Zabbix LLC
+      - com.zabbix.component=zabbix-proxy
+      - com.zabbix.dbtype=sqlite3
+      - com.zabbix.description=Zabbix proxy with SQLite3 database support
+      - com.zabbix.os=${OL_OS_TAG}
+    networks:
+      backend:
+        aliases:
+          - zabbix-proxy-sqlite3
+      frontend: null
+      tools_frontend: null
+    ports:
+      - ${ZABBIX_PROXY_SQLITE3_PORT}:10051
+    profiles:
+      - all
+    restart: ${RESTART_POLICY}
+    stop_grace_period: 30s
+    sysctls:
+      - net.ipv4.ip_local_port_range=1024 64999
+      - net.ipv4.conf.all.accept_redirects=0
+      - net.ipv4.conf.all.secure_redirects=0
+      - net.ipv4.conf.all.send_redirects=0
+    tmpfs: /tmp
+    ulimits:
+      nofile:
+        hard: 40000
+        soft: 20000
+      nproc: 65535
+    volumes:
+      - bind:
+          create_host_path: true
+        read_only: true
+        source: /etc/localtime
+        target: /etc/localtime
+        type: bind
+      - read_only: true
+        source: ${DATA_DIRECTORY}/usr/lib/zabbix/externalscripts
+        target: /usr/lib/zabbix/externalscripts
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${DATA_DIRECTORY}/var/lib/zabbix/modules
+        target: /var/lib/zabbix/modules
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${DATA_DIRECTORY}/var/lib/zabbix/enc
+        target: /var/lib/zabbix/enc
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${DATA_DIRECTORY}/var/lib/zabbix/ssh_keys
+        target: /var/lib/zabbix/ssh_keys
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${DATA_DIRECTORY}/var/lib/zabbix/mibs
+        target: /var/lib/zabbix/mibs
+        type: volume
+        volume: {}
+      - read_only: true
+        source: snmptraps
+        target: /var/lib/zabbix/snmptraps
+        type: volume
+        volume: {}
+      - bind:
+          create_host_path: true
+        read_only: true
+        source: /etc/timezone
+        target: /etc/timezone
+        type: bind
+  zabbix-server:
+    attach: true
+    depends_on:
+      - mysql-server:
+    deploy:
+      resources:
+        limits:
+          cpus: "0.70"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    env_file:
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_srv
+        required: true
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_srv_override
+        required: false
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql
+        required: true
+    image: ${ZABBIX_SERVER_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
+    init: true
+    labels:
+      - com.zabbix.company=Zabbix LLC
+      - com.zabbix.component=zabbix-server
+      - com.zabbix.dbtype=mysql
+      - com.zabbix.description=Zabbix server with MySQL database support
+      - com.zabbix.os=${OL_OS_TAG}
+    networks:
+      backend:
+        aliases:
+          - zabbix-server
+          - zabbix-server-mysql
+      database:
+        aliases:
+          - zabbix-server
+      frontend: null
+      tools_frontend: null
+    ports:
+      - ${ZABBIX_SERVER_PORT}:10051
+    restart: ${RESTART_POLICY}
+    secrets:
+      - source: MYSQL_USER
+        target: /run/secrets/MYSQL_USER
+      - source: MYSQL_PASSWORD
+        target: /run/secrets/MYSQL_PASSWORD
+    stop_grace_period: 30s
+    sysctls:
+      - net.ipv4.ip_local_port_range=1024 64999
+      - net.ipv4.conf.all.accept_redirects=0
+      - net.ipv4.conf.all.secure_redirects=0
+      - net.ipv4.conf.all.send_redirects=0
+    tmpfs: /tmp
+    ulimits:
+      nofile:
+        hard: 40000
+        soft: 20000
+      nproc: 65535
+    volumes:
+      - bind:
+          create_host_path: true
+        read_only: true
+        source: /etc/localtime
+        target: /etc/localtime
+        type: bind
+      - read_only: true
+        source: ${DATA_DIRECTORY}/usr/lib/zabbix/alertscripts
+        target: /usr/lib/zabbix/alertscripts
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${DATA_DIRECTORY}/usr/lib/zabbix/externalscripts
+        target: /usr/lib/zabbix/externalscripts
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${DATA_DIRECTORY}/var/lib/zabbix/dbscripts
+        target: /var/lib/zabbix/dbscripts
+        type: volume
+        volume: {}
+      - source: ${DATA_DIRECTORY}/var/lib/zabbix/export
+        target: /var/lib/zabbix/export
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${DATA_DIRECTORY}/var/lib/zabbix/modules
+        target: /var/lib/zabbix/modules
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${DATA_DIRECTORY}/var/lib/zabbix/enc
+        target: /var/lib/zabbix/enc
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${DATA_DIRECTORY}/var/lib/zabbix/ssh_keys
+        target: /var/lib/zabbix/ssh_keys
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${DATA_DIRECTORY}/var/lib/zabbix/mibs
+        target: /var/lib/zabbix/mibs
+        type: volume
+        volume: {}
+      - read_only: true
+        source: snmptraps
+        target: /var/lib/zabbix/snmptraps
+        type: volume
+        volume: {}
+      - bind:
+          create_host_path: true
+        read_only: true
+        source: /etc/timezone
+        target: /etc/timezone
+        type: bind
+  zabbix-snmptraps:
+    attach: false
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    env_file:
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_snmptraps
+        required: true
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_snmptraps_override
+        required: false
+    image: ${ZABBIX_SNMPTRAPS_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
+    labels:
+      - com.zabbix.company=Zabbix LLC
+      - com.zabbix.component=snmptraps
+      - com.zabbix.description=Zabbix snmptraps
+      - com.zabbix.os=${OL_OS_TAG}
+    networks:
+      backend: null
+      frontend:
+        aliases:
+          - zabbix-snmptraps
+    ports:
+      - ${ZABBIX_SNMPTRAPS_PORT}:1162/udp
+    profiles:
+      - full
+      - all
+    read_only: true
+    restart: ${RESTART_POLICY}
+    stop_grace_period: 5s
+    tmpfs: /tmp
+    volumes:
+      - source: snmptraps
+        target: /var/lib/zabbix/snmptraps
+        type: volume
+        volume: {}
+  zabbix-web-nginx-mysql:
+    attach: false
+    depends_on:
+      - mysql-server:
+    deploy:
+      resources:
+        limits:
+          cpus: "0.70"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+    env_file:
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_web
+        required: true
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_web_override
+        required: false
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql
+        required: true
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_period: 30s
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8080/ping
+      timeout: 5s
+    image: ${ZABBIX_WEB_NGINX_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
+    labels:
+      - com.zabbix.company=Zabbix LLC
+      - com.zabbix.component=zabbix-frontend
+      - com.zabbix.webserver=nginx
+      - com.zabbix.dbtype=mysql
+      - com.zabbix.description=Zabbix frontend on Nginx web-server with MySQL database support
+      - com.zabbix.os=${OL_OS_TAG}
+    networks:
+      backend:
+        aliases:
+          - zabbix-web-nginx-mysql
+      database: null
+      frontend: null
+    ports:
+      - ${ZABBIX_WEB_NGINX_HTTP_PORT}:8080
+      - ${ZABBIX_WEB_NGINX_HTTPS_PORT}:8443
+    restart: ${RESTART_POLICY}
+    secrets:
+      - source: MYSQL_USER
+        target: /run/secrets/MYSQL_USER
+      - source: MYSQL_PASSWORD
+        target: /run/secrets/MYSQL_PASSWORD
+    stop_grace_period: 10s
+    sysctls:
+      - net.core.somaxconn=65535
+    tmpfs: /tmp
+    volumes:
+      - bind:
+          create_host_path: true
+        read_only: true
+        source: /etc/localtime
+        target: /etc/localtime
+        type: bind
+      - read_only: true
+        source: ${DATA_DIRECTORY}/etc/ssl/nginx
+        target: /etc/ssl/nginx
+        type: volume
+        volume: {}
+      - read_only: true
+        source: ${DATA_DIRECTORY}/usr/share/zabbix/modules/
+        target: /usr/share/zabbix/modules
+        type: volume
+        volume: {}
+      - bind:
+          create_host_path: true
+        read_only: true
+        source: /etc/timezone
+        target: /etc/timezone
+        type: bind
+  zabbix-web-service:
+    attach: false
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    env_file:
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_web_service
+        required: true
+      - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_web_service_override
+        required: false
+    image: ${ZABBIX_WEB_SERVICE_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
+    labels:
+      - com.zabbix.company=Zabbix LLC
+      - com.zabbix.component=web-service
+      - com.zabbix.description=Zabbix web service
+      - com.zabbix.os=${OL_OS_TAG}
+    networks:
+      backend:
+        aliases:
+          - zabbix-web-service
+    ports:
+      - ${ZABBIX_WEB_SERVICE_PORT}:10053
+    profiles:
+      - full
+      - all
+    restart: ${RESTART_POLICY}
+    security_opt:
+      - seccomp:${ENV_VARS_DIRECTORY}/chrome_dp.json
+    stop_grace_period: 5s
+    tmpfs: /tmp
+    volumes:
+      - read_only: true
+        source: ${DATA_DIRECTORY}/var/lib/zabbix/enc
+        target: /var/lib/zabbix/enc
+        type: volume
+        volume: {}
+volumes:
+  snmptraps:
+    name: zabbix-docker_snmptraps
