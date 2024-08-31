@@ -94,7 +94,7 @@ services:
         target: /etc/timezone
         type: bind
   mysql-server:
-    attach: false
+    
     command:
       - mysqld
       - --skip-mysqlx
@@ -142,7 +142,7 @@ services:
       - selenium-chrome
       - selenium-firefox
   selenium-chrome:
-    attach: false
+    
     depends_on:
       - selenium
     env_file:
@@ -162,7 +162,7 @@ services:
     scale: 2
     shm_size: 2gb
   selenium-firefox:
-    attach: false
+    
     depends_on:
       - selenium
     env_file:
@@ -181,7 +181,7 @@ services:
     scale: 2
     shm_size: 2gb
   zabbix-agent:
-    attach: false
+    
     deploy:
       mode: global
       resources:
@@ -250,7 +250,7 @@ services:
         target: /etc/timezone
         type: bind
   zabbix-java-gateway:
-    attach: false
+    
     deploy:
       resources:
         limits:
@@ -281,7 +281,7 @@ services:
     restart: ${RESTART_POLICY}
     stop_grace_period: 5s
   zabbix-proxy-sqlite3:
-    attach: false
+    
     deploy:
       resources:
         limits:
@@ -369,7 +369,7 @@ services:
         target: /etc/timezone
         type: bind
   zabbix-server:
-    attach: true
+    
     depends_on:
       - mysql-server
     deploy:
@@ -480,7 +480,7 @@ services:
         target: /etc/timezone
         type: bind
   zabbix-snmptraps:
-    attach: false
+    
     deploy:
       resources:
         limits:
@@ -518,7 +518,7 @@ services:
         type: volume
         volume: {}
   zabbix-web-nginx-mysql:
-    attach: false
+    
     depends_on:
       - mysql-server
     deploy:
@@ -594,7 +594,7 @@ services:
         target: /etc/timezone
         type: bind
   zabbix-web-service:
-    attach: false
+    
     deploy:
       resources:
         limits:
