@@ -13,6 +13,7 @@ status_stack() {
   /usr/bin/docker stack services --compose-file stack.yaml  zabbix 
 }
 
+
 case "$1" in
   start)
     start_service
