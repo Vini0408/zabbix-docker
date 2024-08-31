@@ -116,7 +116,6 @@ services:
     env_file:
       - "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_agent"
       - "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_agent_override"
-    init: true
     pid: host
     privileged: true
     ports:
@@ -203,7 +202,6 @@ services:
       - "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_prx"
       - "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_prx_sqlite3"
       - "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_prx_sqlite3_override"
-    init: true
     ports:
       - ${ZABBIX_PROXY_SQLITE3_PORT}:10051
     tmpfs:
@@ -282,7 +280,6 @@ services:
       - "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_srv"
       - "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_srv_override"
       - "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql"
-    init: true
     ports:
       - ${ZABBIX_SERVER_PORT}:10051
     secrets:
