@@ -148,7 +148,7 @@ services:
   selenium-chrome:
     attach: false
     depends_on:
-      - selenium:
+      - selenium
     env_file:
       - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_selenium_chrome
         required: false
@@ -169,7 +169,7 @@ services:
   selenium-firefox:
     attach: false
     depends_on:
-      - selenium:
+      - selenium
     env_file:
       - path: /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_selenium_firefox
         required: false
@@ -384,7 +384,7 @@ services:
   zabbix-server:
     attach: true
     depends_on:
-      - mysql-server:
+      - mysql-server
     deploy:
       resources:
         limits:
@@ -538,7 +538,7 @@ services:
   zabbix-web-nginx-mysql:
     attach: false
     depends_on:
-      - mysql-server:
+      - mysql-server
     deploy:
       resources:
         limits:
