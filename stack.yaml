@@ -66,8 +66,7 @@ services:
     depends_on:
       - zabbix-server
     env_file:
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_grafana"
-        required: true
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_grafana"
     image: grafana/grafana
     networks:
       default: null
@@ -103,10 +102,7 @@ services:
       - --collation-server=utf8mb4_bin
       - --log_bin_trust_function_creators=1
     env_file:
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql"
-        required: true
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql_override"
-        required: false
+      - "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql"
     environment:
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/MYSQL_ROOT_PASSWORD
     image: ${MYSQL_IMAGE}:${MYSQL_IMAGE_TAG}
@@ -150,8 +146,7 @@ services:
     depends_on:
       - selenium
     env_file:
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_selenium_chrome"
-        required: false
+      - "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_selenium_chrome"
     environment:
       - SE_EVENT_BUS_HOST=selenium
       - SE_EVENT_BUS_PUBLISH_PORT=4442
@@ -171,8 +166,7 @@ services:
     depends_on:
       - selenium
     env_file:
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_selenium_firefox"
-        required: false
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_selenium_firefox"
     environment:
       - SE_EVENT_BUS_HOST=selenium
       - SE_EVENT_BUS_PUBLISH_PORT=4442
@@ -198,10 +192,8 @@ services:
           cpus: "0.1"
           memory: 64M
     env_file:
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_agent"
-        required: true
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_agent_override"
-        required: false
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_agent"
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_agent_override"
     image: ${ZABBIX_AGENT_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
     init: true
     labels:
@@ -268,10 +260,8 @@ services:
           cpus: "0.25"
           memory: 256M
     env_file:
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_java"
-        required: true
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_java_override"
-        required: false
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_java"
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_java_override"
     image: ${ZABBIX_JAVA_GATEWAY_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
     labels:
       - com.zabbix.company=Zabbix LLC
@@ -301,12 +291,9 @@ services:
           cpus: "0.3"
           memory: 256M
     env_file:
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_prx"
-        required: true
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_prx_sqlite3"
-        required: true
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_prx_sqlite3_override"
-        required: false
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_prx"
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_prx_sqlite3"
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_prx_sqlite3_override"
     image: ${ZABBIX_PROXY_SQLITE3_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
     init: true
     labels:
@@ -394,12 +381,9 @@ services:
           cpus: "0.5"
           memory: 512M
     env_file:
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_srv"
-        required: true
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_srv_override"
-        required: false
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql"
-        required: true
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_srv"
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_srv_override"
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql"
     image: ${ZABBIX_SERVER_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
     init: true
     labels:
@@ -506,10 +490,8 @@ services:
           cpus: "0.25"
           memory: 128M
     env_file:
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_snmptraps"
-        required: true
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_snmptraps_override"
-        required: false
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_snmptraps"
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_snmptraps_override"
     image: ${ZABBIX_SNMPTRAPS_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
     labels:
       - com.zabbix.company=Zabbix LLC
@@ -548,12 +530,9 @@ services:
           cpus: "0.5"
           memory: 256M
     env_file:
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_web"
-        required: true
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_web_override"
-        required: false
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql"
-        required: true
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_web"
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_web_override"
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql"
     healthcheck:
       interval: 10s
       retries: 3
@@ -625,10 +604,8 @@ services:
           cpus: "0.25"
           memory: 256M
     env_file:
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_web_service"
-        required: true
-      - path: "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_web_service_override"
-        required: false
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_web_service"
+      -  "/opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_web_service_override"
     image: ${ZABBIX_WEB_SERVICE_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
     labels:
       - com.zabbix.company=Zabbix LLC
