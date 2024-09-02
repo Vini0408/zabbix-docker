@@ -49,6 +49,59 @@ services:
       - default
     volumes:
       - -var-lib-mysql:/var/lib/mysql
+  zabbix-server:
+    deploy:
+      replicas: 1
+      update_config:
+        failure_action: rollback
+    env_file:
+      - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_srv
+      - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql
+    image: ${ZABBIX_SERVER_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
+    labels:
+      - com.zabbix.company=TRT 23
+      - com.zabbix.component=zabbix-server
+      - com.zabbix.dbtype=mysql
+      - com.zabbix.description=Zabbix server with MySQL database support
+      - com.zabbix.os=${OL_OS_TAG}
+    networks:
+      - backend
+      - database
+      - frontend
+      - tools_frontend
+    ports:
+      - target: 10051
+        published: ${ZABBIX_SERVER_PORT}
+        protocol: tcp
+        mode: host
+    restart: ${RESTART_POLICY}
+    secrets:
+      - source: MYSQL_USER
+        target: /run/secrets/MYSQL_USER
+      - source: MYSQL_PASSWORD
+        target: /run/secrets/MYSQL_PASSWORD
+    stop_grace_period: 30s
+    sysctls:
+      - net.ipv4.ip_local_port_range=1024 64999
+      - net.ipv4.conf.all.accept_redirects=0
+      - net.ipv4.conf.all.secure_redirects=0
+      - net.ipv4.conf.all.send_redirects=0
+    tmpfs:
+      - /tmp
+    ulimits:
+      nofile:
+        hard: 40000
+        soft: 20000
+      nproc: 65535
+    volumes:
+      - -usr-lib-zabbix-alertscripts:/usr/lib/zabbix/alertscripts:ro
+      - -usr-lib-zabbix-externalscripts:/usr/lib/zabbix/externalscripts:ro
+      - -var-lib-zabbix-dbscripts:/var/lib/zabbix/dbscripts:ro
+      - -var-lib-zabbix-export:/var/lib/zabbix/export
+      - -var-lib-zabbix-modules:/var/lib/zabbix/modules:ro
+      - -var-lib-zabbix-enc:/var/lib/zabbix/enc:ro
+      - -var-lib-zabbix-ssh_keys:/var/lib/zabbix/ssh_keys:ro
+      - -var-lib-zabbix-mibs:/var/lib/zabbix/mibs:ro
   grafana:
     container_name: grafana
     env_file:
@@ -224,59 +277,7 @@ services:
       - -var-lib-zabbix-enc:/var/lib/zabbix/enc:ro
       - -var-lib-zabbix-ssh_keys:/var/lib/zabbix/ssh_keys:ro
       - -var-lib-zabbix-mibs:/var/lib/zabbix/mibs:ro
-  zabbix-server:
-    deploy:
-      replicas: 1
-      update_config:
-        failure_action: rollback
-    env_file:
-      - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_srv
-      - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql
-    image: ${ZABBIX_SERVER_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
-    labels:
-      - com.zabbix.company=TRT 23
-      - com.zabbix.component=zabbix-server
-      - com.zabbix.dbtype=mysql
-      - com.zabbix.description=Zabbix server with MySQL database support
-      - com.zabbix.os=${OL_OS_TAG}
-    networks:
-      - backend
-      - database
-      - frontend
-      - tools_frontend
-    ports:
-      - target: 10051
-        published: ${ZABBIX_SERVER_PORT}
-        protocol: tcp
-        mode: host
-    restart: ${RESTART_POLICY}
-    secrets:
-      - source: MYSQL_USER
-        target: /run/secrets/MYSQL_USER
-      - source: MYSQL_PASSWORD
-        target: /run/secrets/MYSQL_PASSWORD
-    stop_grace_period: 30s
-    sysctls:
-      - net.ipv4.ip_local_port_range=1024 64999
-      - net.ipv4.conf.all.accept_redirects=0
-      - net.ipv4.conf.all.secure_redirects=0
-      - net.ipv4.conf.all.send_redirects=0
-    tmpfs:
-      - /tmp
-    ulimits:
-      nofile:
-        hard: 40000
-        soft: 20000
-      nproc: 65535
-    volumes:
-      - -usr-lib-zabbix-alertscripts:/usr/lib/zabbix/alertscripts:ro
-      - -usr-lib-zabbix-externalscripts:/usr/lib/zabbix/externalscripts:ro
-      - -var-lib-zabbix-dbscripts:/var/lib/zabbix/dbscripts:ro
-      - -var-lib-zabbix-export:/var/lib/zabbix/export
-      - -var-lib-zabbix-modules:/var/lib/zabbix/modules:ro
-      - -var-lib-zabbix-enc:/var/lib/zabbix/enc:ro
-      - -var-lib-zabbix-ssh_keys:/var/lib/zabbix/ssh_keys:ro
-      - -var-lib-zabbix-mibs:/var/lib/zabbix/mibs:ro
+
   zabbix-snmptraps:
     deploy:
       resources:
