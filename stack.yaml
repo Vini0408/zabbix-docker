@@ -234,13 +234,8 @@ services:
     depends_on:
       - mysql-server
     deploy:
-      resources:
-        limits:
-          cpus: "0.70"
-          memory: 1G
-        reservations:
-          cpus: "0.5"
-          memory: 512M
+      update_config:
+        failure_action: rollback
     env_file:
       - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_srv
       - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql
