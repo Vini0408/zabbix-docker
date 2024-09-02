@@ -304,7 +304,6 @@ services:
     stop_grace_period: 5s
     tmpfs:
       - /tmp
-    volumes: []
   zabbix-web-nginx-mysql:
     deploy:
       resources:
