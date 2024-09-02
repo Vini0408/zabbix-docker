@@ -139,7 +139,7 @@ services:
   #       - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_agent
   #     image: ${ZABBIX_AGENT_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
   #     labels:
-  #       - com.zabbix.company=Zabbix LLC
+  #       - com.zabbix.company=TRT 23
   #       - com.zabbix.component=zabbix-agentd
   #       - com.zabbix.description=Zabbix agent
   #       - com.zabbix.os=${OL_OS_TAG}
@@ -174,7 +174,7 @@ services:
       - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_java
     image: ${ZABBIX_JAVA_GATEWAY_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
     labels:
-      - com.zabbix.company=Zabbix LLC
+      - com.zabbix.company=TRT 23
       - com.zabbix.component=java-gateway
       - com.zabbix.description=Zabbix Java Gateway
       - com.zabbix.os=${OL_OS_TAG}
@@ -199,7 +199,7 @@ services:
       - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_prx_sqlite3
     image: ${ZABBIX_PROXY_SQLITE3_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
     labels:
-      - com.zabbix.company=Zabbix LLC
+      - com.zabbix.company=TRT 23
       - com.zabbix.component=zabbix-proxy
       - com.zabbix.dbtype=sqlite3
       - com.zabbix.description=Zabbix proxy with SQLite3 database support
@@ -246,7 +246,7 @@ services:
       - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_db_mysql
     image: ${ZABBIX_SERVER_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
     labels:
-      - com.zabbix.company=Zabbix LLC
+      - com.zabbix.company=TRT 23
       - com.zabbix.component=zabbix-server
       - com.zabbix.dbtype=mysql
       - com.zabbix.description=Zabbix server with MySQL database support
@@ -302,7 +302,7 @@ services:
       - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_snmptraps
     image: ${ZABBIX_SNMPTRAPS_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
     labels:
-      - com.zabbix.company=Zabbix LLC
+      - com.zabbix.company=TRT 23
       - com.zabbix.component=snmptraps
       - com.zabbix.description=Zabbix snmptraps
       - com.zabbix.os=${OL_OS_TAG}
@@ -342,7 +342,7 @@ services:
       timeout: 5s
     image: ${ZABBIX_WEB_NGINX_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
     labels:
-      - com.zabbix.company=Zabbix LLC
+      - com.zabbix.company=TRT 23
       - com.zabbix.component=zabbix-frontend
       - com.zabbix.webserver=nginx
       - com.zabbix.dbtype=mysql
@@ -383,7 +383,7 @@ services:
       - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_web_service
     image: ${ZABBIX_WEB_SERVICE_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
     labels:
-      - com.zabbix.company=Zabbix LLC
+      - com.zabbix.company=TRT 23
       - com.zabbix.component=web-service
       - com.zabbix.description=Zabbix web service
       - com.zabbix.os=${OL_OS_TAG}
