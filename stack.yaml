@@ -125,42 +125,42 @@ services:
       - tools_frontend
     restart: ${RESTART_POLICY}
     shm_size: 2gb
-  zabbix-agent:
-    deploy:
-      mode: global
-      resources:
-        limits:
-          cpus: "0.2"
-          memory: 128M
-        reservations:
-          cpus: "0.1"
-          memory: 64M
-    env_file:
-      - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_agent
-    image: ${ZABBIX_AGENT_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
-    labels:
-      - com.zabbix.company=Zabbix LLC
-      - com.zabbix.component=zabbix-agentd
-      - com.zabbix.description=Zabbix agent
-      - com.zabbix.os=${OL_OS_TAG}
-    networks:
-      - backend
-    pid: host
-    ports:
-      - target: 10050
-        published: ${ZABBIX_AGENT_PORT}
-        protocol: tcp
-        mode: host
-    privileged: true
-    restart: ${RESTART_POLICY}
-    stop_grace_period: 5s
-    tmpfs:
-      - /tmp
-    volumes:
-      - -etc-zabbix-zabbix_agentd-d:/etc/zabbix/zabbix_agentd.d:ro
-      - -var-lib-zabbix-modules:/var/lib/zabbix/modules:ro
-      - -var-lib-zabbix-enc:/var/lib/zabbix/enc:ro
-      - -var-lib-zabbix-ssh_keys:/var/lib/zabbix/ssh_keys:ro
+  #   zabbix-agent:
+  #     deploy:
+  #       mode: global
+  #       resources:
+  #         limits:
+  #           cpus: "0.2"
+  #           memory: 128M
+  #         reservations:
+  #           cpus: "0.1"
+  #           memory: 64M
+  #     env_file:
+  #       - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_agent
+  #     image: ${ZABBIX_AGENT_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}
+  #     labels:
+  #       - com.zabbix.company=Zabbix LLC
+  #       - com.zabbix.component=zabbix-agentd
+  #       - com.zabbix.description=Zabbix agent
+  #       - com.zabbix.os=${OL_OS_TAG}
+  #     networks:
+  #       - backend
+  #     pid: host
+  #     ports:
+  #       - target: 10050
+  #         published: ${ZABBIX_AGENT_PORT}
+  #         protocol: tcp
+  #         mode: host
+  #     privileged: true
+  #     restart: ${RESTART_POLICY}
+  #     stop_grace_period: 5s
+  #     tmpfs:
+  #       - /tmp
+  #     volumes:
+  #       - -etc-zabbix-zabbix_agentd-d:/etc/zabbix/zabbix_agentd.d:ro
+  #       - -var-lib-zabbix-modules:/var/lib/zabbix/modules:ro
+  #       - -var-lib-zabbix-enc:/var/lib/zabbix/enc:ro
+  #       - -var-lib-zabbix-ssh_keys:/var/lib/zabbix/ssh_keys:ro
   zabbix-java-gateway:
     deploy:
       resources:
