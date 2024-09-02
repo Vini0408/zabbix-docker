@@ -51,8 +51,6 @@ services:
       - -var-lib-mysql:/var/lib/mysql
   grafana:
     container_name: grafana
-    depends_on:
-      - zabbix-server
     env_file:
       - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_grafana
     image: grafana/grafana
@@ -94,10 +92,8 @@ services:
     networks:
       - tools_frontend
   selenium-chrome:
-    depends_on:
-      - selenium
     deploy:
-      replicas: 2
+      replicas: 1
     env_file:
       - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_selenium_chrome
     environment:
@@ -110,10 +106,8 @@ services:
     restart: ${RESTART_POLICY}
     shm_size: 2gb
   selenium-firefox:
-    depends_on:
-      - selenium
     deploy:
-      replicas: 2
+      replicas: 1
     env_file:
       - /opt/zabbix-docker/${ENV_VARS_DIRECTORY}/.env_selenium_firefox
     environment:
@@ -231,9 +225,8 @@ services:
       - -var-lib-zabbix-ssh_keys:/var/lib/zabbix/ssh_keys:ro
       - -var-lib-zabbix-mibs:/var/lib/zabbix/mibs:ro
   zabbix-server:
-    depends_on:
-      - mysql-server
     deploy:
+      replicas: 1
       update_config:
         failure_action: rollback
     env_file:
@@ -313,8 +306,6 @@ services:
       - /tmp
     volumes: []
   zabbix-web-nginx-mysql:
-    depends_on:
-      - mysql-server
     deploy:
       resources:
         limits:
@@ -394,7 +385,6 @@ services:
       - /tmp
     volumes:
       - -var-lib-zabbix-enc:/var/lib/zabbix/enc:ro
-version: "3.3"
 volumes:
   -etc-ssl-nginx:
     driver: local
